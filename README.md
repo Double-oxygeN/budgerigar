@@ -1,20 +1,18 @@
 # budgerigar
 
-FIXME: description
+BUDGERIGAR: my versatile bulletin
 
 ## Installation
 
-Download from http://example.com/FIXME.
+Download from https://github.com/Double-oxygeN/budgerigar.
 
 ## Usage
 
-FIXME: explanation
-
-    $ java -jar budgerigar-0.1.0-standalone.jar [args]
+Now developing...
 
 ## Options
 
-FIXME: listing of options this app accepts.
+...
 
 ## Examples
 
@@ -30,7 +28,7 @@ FIXME: listing of options this app accepts.
 
 ## License
 
-Copyright © 2016 FIXME
+Copyright © 2016 Double_oxygeN
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
