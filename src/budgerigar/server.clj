@@ -1,6 +1,7 @@
 (ns budgerigar.server
   (:import [org.newsclub.net.unix AFUNIXSocket AFUNIXServerSocket AFUNIXSocketAddress]
-           [java.io PrintWriter InputStreamReader BufferedReader])
+           [java.io PrintWriter InputStreamReader BufferedReader]
+           [java.awt Color])
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.core.async :as async :refer [>! <! go go-loop]]
@@ -35,11 +36,26 @@
     (>! c line)
     (recur (.readLine (:input client)))))
 
+(defn- make-color [r g b]
+  (Color. r g b))
+
+(defn painter-channel [c mes w h]
+  (go-loop [line (<! c)]
+    (let [new-element (json/read-str line :key-fn keyword)]
+      (->> (assoc new-element :x (or (:x new-element) (rand-int (bit-shift-right w 1)))
+                              :y (or (:y new-element) (rand-int (bit-shift-right h 1)))
+                              :width (or (:width new-element) (rand-int (bit-shift-right w 1)))
+                              :height (or (:height new-element) (rand-int (bit-shift-right h 1)))
+                              :color (apply make-color (or (:color new-element) [255 255 255])))
+        (swap! mes conj)))
+    (recur (<! c))))
+
+;; for testing (below)
+
 (defn printer-channel
   [c socket]
   (let [out (-> socket .getOutputStream (PrintWriter. true))]
     (go-loop [line (<! c)]
-      (println line)
       (.println out line)
       (recur (<! c)))))
 

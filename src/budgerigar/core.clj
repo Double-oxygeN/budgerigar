@@ -16,5 +16,5 @@
       (let [gatekeeper (chan) reader (chan)]
         (s/gatekeeper-channel gatekeeper server)
         (go-loop [client (<! gatekeeper)] (s/reader-channel reader client) (recur (<! gatekeeper)))
-        (gui/set-gui 30)
-        (loop [line (<!! reader)] (println line) (recur (<!! reader)))))))
+        (gui/set-gui 30 reader)
+        (loop [] (recur))))))
