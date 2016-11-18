@@ -13,14 +13,12 @@
       (.fillRect x y w h))))
 
 (defn gui-panel [reader]
-  (let [width 1080 height 810 messages (atom [])]
+  (let [width 1024 height 768 messages (atom []) background-image (-> (Toolkit/getDefaultToolkit) (.getImage (io/resource "background.png")))]
     (s/painter-channel reader messages width height)
     (proxy [JPanel ActionListener MouseListener MouseMotionListener] []
       (paintComponent [g]
         (doto g
-          (.setColor Color/black)
-          (.fillRect 0 0 width height)
-          (.setColor Color/green))
+          (.drawImage background-image 0 0 width height this))
         (doall (map #(fill-rectangle-from-map g % width height) @messages)))
       (actionPerformed [e]
         (.repaint this))
