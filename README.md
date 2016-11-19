@@ -10,10 +10,14 @@ Download from https://github.com/Double-oxygeN/budgerigar.
 
 It receives json string using UNIX Domain Socket(/private/var/tmp/budgerigar.socket).
 - `x`, `y` : position of the up-left corner of the rectangle (null means random position)
-- `width`, "height" : width and height of the rectangle (null means random value)
-- `color` : color of the rectangle (null means white)
+- `width`, `height` : width and height of the rectangle (null means random value)
+- `frame-width` : frame width (null means 2)
+- `color` : color of the rectangle
+  - `frame` : frame color (null means the same as body color)
+  - `body` : body color (null means white)
+  - `character` : character color (null means black)
 - `body` : contents of the rectangle (write xml)
-- `fade` : whether the rectangle fades automatically or not (true/false)
+- `fade` : speed of fading (null means 0)
 
 ## Options
 

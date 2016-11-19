@@ -7,10 +7,16 @@
             [budgerigar.server :as s]))
 
 (defn- fill-rectangle-from-map [g mp width height]
-  (let [x (:x mp) y (:y mp) w (:width mp) h (:height mp) color (:color mp)]
+  (let [x (:x mp) y (:y mp) w (:width mp) h (:height mp) frame-w (:frame-width mp)
+        color (:color mp) body-color (:body color) frame-color (:frame color) char-color (:character color)
+        body (:body mp) fade (:fade mp)]
     (doto g
-      (.setColor color)
-      (.fillRect x y w h))))
+      (.setColor frame-color)
+      (.fillRect x y w h)
+      (.setColor body-color)
+      (.fillRect (+ x frame-w) (+ y frame-w) (- w (bit-shift-left frame-w 1)) (- h (bit-shift-left frame-w 1)))
+      (.setColor char-color)
+      (.drawString body (+ x frame-w) (+ y 15 frame-w)))))
 
 (defn gui-panel [reader]
   (let [width 1024 height 768 messages (atom []) background-image (-> (Toolkit/getDefaultToolkit) (.getImage (io/resource "background.png")))]

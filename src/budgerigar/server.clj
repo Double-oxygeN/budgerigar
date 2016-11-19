@@ -41,12 +41,17 @@
 
 (defn painter-channel [c mes w h]
   (go-loop [line (<! c)]
-    (let [new-element (json/read-str line :key-fn keyword)]
+    (let [new-element (json/read-str line :key-fn keyword) color-element (:color new-element)]
       (->> (assoc new-element :x (or (:x new-element) (rand-int (bit-shift-right w 1)))
                               :y (or (:y new-element) (rand-int (bit-shift-right h 1)))
                               :width (or (:width new-element) (rand-int (bit-shift-right w 1)))
                               :height (or (:height new-element) (rand-int (bit-shift-right h 1)))
-                              :color (apply make-color (or (:color new-element) [255 255 255])))
+                              :frame-width (or (:frame-width new-element) 2)
+                              :color {:frame (apply make-color (or (:frame color-element) (:body color-element) [255 255 255]))
+                                      :body (apply make-color (or (:body color-element) [255 255 255]))
+                                      :character (apply make-color (or (:character color-element) [0 0 0]))}
+                              :body (or (:body new-element) "")
+                              :fade (or (:fade new-element) 0))
         (swap! mes conj)))
     (recur (<! c))))
 
