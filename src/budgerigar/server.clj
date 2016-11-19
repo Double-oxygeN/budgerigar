@@ -55,7 +55,8 @@
                               :font (or (:font new-element) "YuGo-Medium")
                               :font-size (or (:font-size new-element) 12)
                               :fade (or (:fade new-element) 0)
-                              :alpha 255)
+                              :alpha 255
+                              :on-mouse false)
         (swap! mes conj)))
     (recur (<! c))))
 

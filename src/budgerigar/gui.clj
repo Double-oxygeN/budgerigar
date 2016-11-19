@@ -59,6 +59,21 @@
           (zipmap [:body :frame :character])
           (assoc mp :alpha alpha :color))))))
 
+(defn- mouse-on [mouse x y w h]
+  (and
+    (< x (.getX mouse) (+ x w))
+    (< y (.getY mouse) (+ y h))))
+
+(defn- mouse-on-message [mp mouse-event]
+  (if (map? mp)
+    (if (:on-mouse mp)
+      (if (mouse-on mouse-event (:x mp) (:y mp) (:width mp) (:height mp))
+        mp
+        (assoc mp :on-mouse false))
+      (if (mouse-on mouse-event (:x mp) (:y mp) (:width mp) (:height mp))
+        (assoc mp :on-mouse true :alpha 255)
+        mp))))
+
 (defn gui-panel [reader]
   (let [width 1024 height 768 messages (atom []) background-image (-> (Toolkit/getDefaultToolkit) (.getImage (io/resource "background.png")))]
     (s/painter-channel reader messages width height)
@@ -73,9 +88,9 @@
         (reset! messages (vec (map fade-action @messages)))
         (.repaint this))
       (mouseEntered [e])
-      (mouseMoved [e])
-      (mouseClicked [e]
-        (.add this (JTextArea. 20 20)))
+      (mouseMoved [e]
+        (reset! messages (vec (sort-by :alpha (map #(mouse-on-message % e) @messages)))))
+      (mouseClicked [e])
       (mousePressed [e])
       (mouseDragged [e])
       (mouseReleased [e])
