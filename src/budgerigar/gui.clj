@@ -1,32 +1,76 @@
 (ns budgerigar.gui
-  (:import [java.awt Color Dimension Toolkit]
+  (:import [java.awt Color Dimension Font Graphics2D RenderingHints Toolkit]
+           [java.awt.font TextAttribute LineBreakMeasurer]
            [javax.swing JFrame JPanel JMenu JMenuItem JMenuBar JTextArea Timer ImageIcon]
-           [java.awt.event ActionListener MouseListener MouseMotionListener])
+           [java.awt.event ActionListener MouseListener MouseMotionListener]
+           [java.text AttributedString])
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [budgerigar.server :as s]))
 
+(defn- next-layout [line-measurer s position wrapping-width]
+  (let [br-index (str/index-of s \newline (inc position))]
+    (if (or (nil? br-index) (<= br-index position))
+      (.nextLayout line-measurer (float wrapping-width))
+      (.nextLayout line-measurer (float wrapping-width) br-index false))))
+
+(defn- draw-string-in-rect
+  "draw string inserting break-lines automatically"
+  [g s x y w h]
+  (let [astr (AttributedString. s)
+        _ (doto astr
+            (.addAttribute TextAttribute/FONT (.getFont g))
+            (.addAttribute TextAttribute/FOREGROUND (.getColor g))
+            (.addAttribute TextAttribute/BACKGROUND (s/make-color 0 0 0 0)))
+        ac-iter (.getIterator astr)
+        ctx (.getFontRenderContext g)
+        line-measurer (LineBreakMeasurer. ac-iter ctx)
+        begin-index (.getBeginIndex ac-iter)
+        end-index (.getEndIndex ac-iter)
+        _ (.setPosition line-measurer begin-index)]
+    (loop [draw-x x draw-y y pos (.getPosition line-measurer)]
+      (if (< pos end-index)
+        (let [layout (next-layout line-measurer s pos w)]
+          (if (< (+ draw-y (.getAscent layout) (.getDescent layout) (.getLeading layout)) (+ y h))
+            (do (.draw layout g draw-x (+ draw-y (.getAscent layout)))
+              (recur draw-x (+ draw-y (.getAscent layout) (.getDescent layout) (.getLeading layout)) (.getPosition line-measurer)))))))))
+
 (defn- fill-rectangle-from-map [g mp width height]
-  (let [x (:x mp) y (:y mp) w (:width mp) h (:height mp) frame-w (:frame-width mp)
-        color (:color mp) body-color (:body color) frame-color (:frame color) char-color (:character color)
-        body (:body mp) fade (:fade mp)]
-    (doto g
-      (.setColor frame-color)
-      (.fillRect x y w h)
-      (.setColor body-color)
-      (.fillRect (+ x frame-w) (+ y frame-w) (- w (bit-shift-left frame-w 1)) (- h (bit-shift-left frame-w 1)))
-      (.setColor char-color)
-      (.drawString body (+ x frame-w) (+ y 15 frame-w)))))
+  (if (map? mp)
+    (let [x (:x mp) y (:y mp) w (:width mp) h (:height mp) frame-w (:frame-width mp)
+          color (:color mp) body-color (:body color) frame-color (:frame color) char-color (:character color)
+          body (:body mp) fade (:fade mp) font (:font mp) fontsize (:font-size mp)]
+      (doto g
+        (.setColor frame-color)
+        (.fillRect x y w h)
+        (.setColor body-color)
+        (.fillRect (+ x frame-w) (+ y frame-w) (- w (bit-shift-left frame-w 1)) (- h (bit-shift-left frame-w 1)))
+        (.setColor char-color)
+        (.setFont (Font. font Font/PLAIN fontsize))
+        (draw-string-in-rect body (+ x frame-w) (+ y frame-w) (- w (bit-shift-left frame-w 1)) (- h (bit-shift-left frame-w 1)))))))
+
+(defn fade-action [mp]
+  (if (map? mp)
+    (let [color (:color mp) fade (:fade mp) alpha (-> (:alpha mp) (- fade))
+          colors [(:body color) (:frame color) (:character color)]]
+      (if (> alpha 0)
+        (->> colors
+          (map #(s/make-color (.getRed %) (.getGreen %) (.getBlue %) (int alpha)))
+          (zipmap [:body :frame :character])
+          (assoc mp :alpha alpha :color))))))
 
 (defn gui-panel [reader]
   (let [width 1024 height 768 messages (atom []) background-image (-> (Toolkit/getDefaultToolkit) (.getImage (io/resource "background.png")))]
     (s/painter-channel reader messages width height)
     (proxy [JPanel ActionListener MouseListener MouseMotionListener] []
       (paintComponent [g]
-        (doto g
-          (.drawImage background-image 0 0 width height this))
-        (doall (map #(fill-rectangle-from-map g % width height) @messages)))
+        (let [g2 (cast Graphics2D g)]
+          (doto g2
+            (.setRenderingHint RenderingHints/KEY_TEXT_ANTIALIASING RenderingHints/VALUE_TEXT_ANTIALIAS_GASP)
+            (.drawImage background-image 0 0 width height this))
+          (doall (map #(fill-rectangle-from-map g2 % width height) @messages))))
       (actionPerformed [e]
+        (reset! messages (vec (map fade-action @messages)))
         (.repaint this))
       (mouseEntered [e])
       (mouseMoved [e])

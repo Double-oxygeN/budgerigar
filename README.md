@@ -17,6 +17,8 @@ It receives json string using UNIX Domain Socket(/private/var/tmp/budgerigar.soc
   - `body` : body color (null means white)
   - `character` : character color (null means black)
 - `body` : contents of the rectangle (write xml)
+- `font` : font (null means "YuGo-Medium")
+- `font-size` : font size (null means 12)
 - `fade` : speed of fading (null means 0)
 
 ## Options
