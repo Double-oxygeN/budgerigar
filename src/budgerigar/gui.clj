@@ -85,7 +85,7 @@
             (.drawImage background-image 0 0 width height this))
           (doall (map #(fill-rectangle-from-map g2 % width height) @messages))))
       (actionPerformed [e]
-        (reset! messages (vec (map fade-action @messages)))
+        (reset! messages (vec (keep fade-action @messages)))
         (.repaint this))
       (mouseEntered [e])
       (mouseMoved [e]
