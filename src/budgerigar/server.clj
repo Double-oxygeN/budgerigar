@@ -32,9 +32,11 @@
   "set channel as a reader of what a client sends"
   [c client]
   (go-loop [line (.readLine (:input client))]
-    (tim/info line "from client No." (:id client))
-    (>! c line)
-    (recur (.readLine (:input client)))))
+    (if-not (nil? line)
+      (do
+        (tim/info line "from client No." (:id client))
+        (>! c line)
+        (recur (.readLine (:input client)))))))
 
 (defn make-color
   ([r g b] (Color. r g b 255))
@@ -54,7 +56,7 @@
                               :body (or (:body new-element) "")
                               :font (or (:font new-element) "YuGo-Medium")
                               :font-size (or (:font-size new-element) 12)
-                              :fade (or (:fade new-element) 0)
+                              :fade (or (:fade new-element) 0.1)
                               :alpha 255
                               :on-mouse false)
         (swap! mes conj)))

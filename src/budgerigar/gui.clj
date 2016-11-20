@@ -90,7 +90,8 @@
       (mouseEntered [e])
       (mouseMoved [e]
         (reset! messages (vec (sort-by :alpha (map #(mouse-on-message % e) @messages)))))
-      (mouseClicked [e])
+      (mouseClicked [e]
+        (reset! messages (vec (remove #(= (last (filter :on-mouse @messages)) %) @messages))))
       (mousePressed [e])
       (mouseDragged [e])
       (mouseReleased [e])
