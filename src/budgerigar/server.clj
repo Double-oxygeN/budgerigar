@@ -45,15 +45,15 @@
 (defn painter-channel [c mes w h]
   (go-loop [line (<! c)]
     (let [new-element (json/read-str line :key-fn keyword) color-element (:color new-element)]
-      (->> (assoc new-element :x (or (:x new-element) (rand-int (bit-shift-right w 1)))
-                              :y (or (:y new-element) (rand-int (bit-shift-right h 1)))
-                              :width (or (:width new-element) (rand-int (bit-shift-right w 1)))
-                              :height (or (:height new-element) (rand-int (bit-shift-right h 1)))
+      (->> (assoc new-element :x (or (:x new-element) (rand-int (- w (or (:width new-element) (bit-shift-right w 1)))))
+                              :y (or (:y new-element) (rand-int (- h (or (:height new-element) (bit-shift-right h 1)))))
+                              :width (or (:width new-element) (rand-int (- w (or (:x new-element) (bit-shift-right w 1)))))
+                              :height (or (:height new-element) (rand-int (- h (or (:y new-element) (bit-shift-right h 1)))))
                               :frame-width (or (:frame-width new-element) 2)
                               :color {:frame (apply make-color (or (:frame color-element) (:body color-element) [255 255 255]))
                                       :body (apply make-color (or (:body color-element) [255 255 255]))
                                       :character (apply make-color (or (:character color-element) [0 0 0]))}
-                              :body (or (:body new-element) "")
+                              :body (or (:body new-element) " ")
                               :font (or (:font new-element) "YuGo-Medium")
                               :font-size (or (:font-size new-element) 12)
                               :fade (or (:fade new-element) 0.1)
