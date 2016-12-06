@@ -8,6 +8,8 @@ Download from https://github.com/Double-oxygeN/budgerigar.
 
 ## Usage
 
+    $ java -jar budgerigar-0.1.0-SNAPSHOT-standalone.jar
+
 It receives json string using UNIX Domain Socket(/private/var/tmp/budgerigar.socket).
 - `x`, `y` : position of the up-left corner of the rectangle (null means random position)
 - `width`, `height` : width and height of the rectangle (null means random value)
@@ -20,22 +22,6 @@ It receives json string using UNIX Domain Socket(/private/var/tmp/budgerigar.soc
 - `font` : font (null means "YuGo-Medium")
 - `font-size` : font size (null means 12)
 - `fade` : speed of fading (null means 0.1)
-
-## Options
-
-...
-
-## Examples
-
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
 
 ## License
 

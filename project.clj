@@ -1,4 +1,4 @@
-(defproject budgerigar "0.1.0-SNAPSHOT"
+(defproject budgerigar "0.1.0"
   :description "BUDGERIGAR: my versatile bulletin"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
